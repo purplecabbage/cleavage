@@ -39,7 +39,7 @@
 	webView = [ [ UIWebView alloc ] initWithFrame:screenBounds ];
     [webView setAutoresizingMask: (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight) ];
 	CGRect frame = webView.frame;
-	frame.origin.y  += 20.0;
+	frame.origin.y  += 40;
 	webView.frame = frame;
 	[ self setWebView:webView ];
 	[ self.view addSubview:webView ];
@@ -59,7 +59,7 @@
     NSNumber *useLocation          = [settings objectForKey:@"UseLocation"];
     NSNumber *_autoRotate           = [settings objectForKey:@"AutoRotate"];
     NSString *startOrientation     = [settings objectForKey:@"StartOrientation"];
-    NSString *rotateOrientation    = [settings objectForKey:@"RotateOrientation"];
+    NSString *_rotateOrientation    = [settings objectForKey:@"RotateOrientation"];
     //NSString *topActivityIndicator = [settings objectForKey:@"TopActivityIndicator"];
 	
 	/*
@@ -129,7 +129,7 @@
      * only use landscape or portrait orientations, change the value in PhoneGap.plist to indicate that.
      * Value should be one of: any, portrait, landscape
      */
-    [self setRotateOrientation:rotateOrientation];
+    [self setRotateOrientation:_rotateOrientation];
     
 	/*
 	 * The Activity View is the top spinning throbber in the status/battery bar. We init it with the default Grey Style.
@@ -197,7 +197,7 @@ static NSString *gapVersion;
 
 + (NSString*) wwwFolderName
 {
-	return @"";
+	return @"www";
 }
 
 + (NSString*) pathForResource:(NSString*)resourcepath
@@ -246,6 +246,20 @@ static NSString *gapVersion;
 		
 		[optionsString release];
     }
+}
+
+- (NSDictionary*) deviceProperties
+{
+	UIDevice *device = [UIDevice currentDevice];
+    NSMutableDictionary *devProps = [NSMutableDictionary dictionaryWithCapacity:4];
+    [devProps setObject:[device model] forKey:@"platform"];
+    [devProps setObject:[device systemVersion] forKey:@"version"];
+    [devProps setObject:[device uniqueIdentifier] forKey:@"uuid"];
+    [devProps setObject:[device name] forKey:@"name"];
+    [devProps setObject:[FlipsideViewController phoneGapVersion ] forKey:@"gap"];
+	
+    NSDictionary *devReturn = [NSDictionary dictionaryWithDictionary:devProps];
+    return devReturn;
 }
 
 - (NSString*) appURLScheme
@@ -385,10 +399,13 @@ static NSString *gapVersion;
 	 * Hide the Top Activity THROBER in the Battery Bar
 	 */
 	
-	Device* pDevice = [self getCommandInstance:@"Device"];
-	NSDictionary *deviceProperties = [pDevice deviceProperties];
+
+  //  NSMutableString *result = [ self deviceProperties];
+	
+	NSDictionary *deviceProperties = [ self deviceProperties];
     NSMutableString *result = [[NSMutableString alloc] initWithFormat:@"DeviceInfo = %@;", [deviceProperties JSONFragment]];
-    
+	
+   /* */
     /* Settings.plist
 	 * Read the optional Settings.plist file and push these user-defined settings down into the web application.
 	 * This can be useful for supplying build-time configuration variables down to the app to change its behaviour,
